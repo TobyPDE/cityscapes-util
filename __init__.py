@@ -26,8 +26,9 @@ def image_names(cityscapes_root, subset, citynames=False):
     - `subset` the subset to be loaded can be one of `train`, `test`, `val`, `train_extra`.
     '''
     image_folder = os.path.join(cityscapes_root, 'leftImg8bit', subset)
-    cnames = []
-    inames = []
+
+    # This is a list of tuples of the form (filename, cityname)
+    image_names = []
 
     #Get all the images in the subfolders
     for city in os.listdir(image_folder):
@@ -35,8 +36,14 @@ def image_names(cityscapes_root, subset, citynames=False):
 
         for fname in os.listdir(city_folder):
             if fname.endswith('.png'):
-                inames.append(os.path.join(city_folder, fname))
-                cnames.append(city)
+                image_names.append((os.path.join(city_folder, fname), city))
+
+    # Make sure that the ordering of the filenames is invariant under the possible
+    # directory traversals. This is important if we want to generate the demo video.
+    image_names = sorted(image_names, key=lambda x: x[0])
+
+    # Restore the original return format
+    inames, cnames = map(list, zip(*image_names))
 
     return (inames, cnames) if citynames else inames
 
